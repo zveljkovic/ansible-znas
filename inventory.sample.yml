@@ -1,0 +1,7 @@
+all:
+  hosts:
+    znas:
+      ansible_host: 192.168.0.100
+      ansible_user: yourusername
+      ansible_become: true
+      ansible_sudo_pass: yoursudopassword

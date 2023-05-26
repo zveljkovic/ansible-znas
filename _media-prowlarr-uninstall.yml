@@ -1,0 +1,24 @@
+- name: Ensure Prowlarr is stopped.
+  ansible.builtin.systemd:
+    name: prowlarr.service
+    state: stopped
+- name: Ensure Prowlarr is disabled at boot.
+  ansible.builtin.systemd:
+    name: prowlarr.service
+    enabled: no
+- name: Ensure /home/media/apps/Prowlarr directory is deleted.
+  ansible.builtin.file:
+    path: /home/media/apps/Prowlarr
+    state: absent
+- name: Ensure /home/media/apps/Prowlarr-data directory is deleted.
+  ansible.builtin.file:
+    path: /home/media/apps/Prowlarr-data
+    state: absent
+- name: Delete Prowlarr service file
+  ansible.builtin.file:
+    path: /usr/lib/systemd/system/prowlarr.service
+    state: absent
+- name: Delete prowlarr user.
+  ansible.builtin.user:
+    name: prowlarr
+    state: absent

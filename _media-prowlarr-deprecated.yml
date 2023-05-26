@@ -1,0 +1,69 @@
+
+- name: Create prowlarr user
+  ansible.builtin.user:
+    name: prowlarr
+    comment: prowlarr user
+    shell: /usr/sbin/nologin
+    system: yes
+    create_home: false
+    state: present
+    groups: media
+    append: true
+- name: Ensure Prowlarr is stopped.
+  ansible.builtin.systemd:
+    name: prowlarr.service
+    state: stopped
+- name: Ensure Prowlarr is disabled at boot.
+  ansible.builtin.systemd:
+    name: prowlarr.service
+    enabled: no
+- name: Ensure /home/media/apps/Prowlarr directory is deleted.
+  ansible.builtin.file:
+    path: /home/media/apps/Prowlarr
+    state: absent
+- name: Apt install prerequisites curl & sqlite3
+  ansible.builtin.apt:
+    name:
+      - curl
+      - sqlite3
+    state: present
+- name: Download and extract prowlarr into /home/media/apps
+  ansible.builtin.unarchive:
+    src: https://prowlarr.servarr.com/v1/update/develop/updatefile?os=linux&runtime=netcore&arch=x64
+    remote_src: true
+    dest: /home/media/apps
+- name: Ensure /home/media/apps/prowlarr permissions
+  ansible.builtin.file:
+    path: /home/media/apps/Prowlarr
+    state: directory
+    recurse: true
+    mode: "775"
+    owner: prowlarr
+    group: media
+- name: Ensure /home/media/apps/Prowlarr-data directory is created
+  ansible.builtin.file:
+    path: /home/media/apps/Prowlarr-data
+    state: directory
+    recurse: true
+    mode: "775"
+    owner: prowlarr
+    group: media
+- name: Copy Prowlarr service file if not exists
+  ansible.builtin.copy:
+    src: "./media/prowlarr.service"
+    dest: "/usr/lib/systemd/system/prowlarr.service"
+    force: no # copies file when no dest file exists
+    owner: root
+    group: root
+    mode: 0644
+- name: Ensure Prowlarr is enabled at boot.
+  ansible.builtin.systemd:
+    name: prowlarr.service
+    enabled: yes
+    daemon_reload: yes
+  notify:
+    - restart Prowlarr
+- name: Ensure Prowlarr is started.
+  ansible.builtin.systemd:
+    name: prowlarr.service
+    state: started

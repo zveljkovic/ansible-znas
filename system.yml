@@ -1,0 +1,35 @@
+- name: Setup system
+  hosts: "{{ target|default('znas') }}"
+  tasks:
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+    - name: Install default software
+      ansible.builtin.apt:
+        pkg:
+          - htop
+          - btop
+          - ncdu
+          - p7zip
+          - fail2ban
+          - mc
+          - borgbackup
+          - screen
+    - name: Create 1GB file for reserved space
+      community.general.filesize:
+        path: /home/reserved-space-for-deletion
+        size: 1G
+    - name: Create backup script
+      ansible.builtin.copy:
+        src: backup.sh
+        dest: /home/backup.sh
+        owner: root
+        group: root
+        mode: '0700'
+    - name: Create a backup cron job
+      ansible.builtin.cron:
+        name: "Borg backup"
+        minute: "0"
+        hour: "2"
+        job: "bash /home/backup.sh"

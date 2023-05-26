@@ -1,0 +1,44 @@
+- name: Syncthing
+  hosts: "{{ target|default('znas') }}"
+  tasks:
+    - name: Add the release PGP keys
+      ansible.builtin.apt_key:
+        url: https://syncthing.net/release-key.gpg
+        keyring: /usr/share/keyrings/syncthing-archive-keyring.gpg
+        state: present
+    - name: Add the "stable" channel to your APT sources
+      ansible.builtin.apt_repository:
+        repo: deb [signed-by=/usr/share/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable
+        state: present
+    - name: Install syncthing
+      ansible.builtin.apt:
+        name: syncthing
+        state: present
+    - name: Setup user folders
+      ansible.builtin.file:
+        path: "/home/{{ item.name }}/.config/syncthing"
+        state: directory
+        mode: "700"
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
+      loop: "{{users}}"
+    - name: Copy syncthing config if not existing
+      ansible.builtin.copy:
+        src: "./syncthing/{{ item.name }}-config.xml"
+        dest: "/home/{{ item.name }}/.config/syncthing/config.xml"
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
+        force: no # copies file when no dest file exists
+      loop: "{{users}}"
+    - name: Start syncthing daemon for users
+      ansible.builtin.systemd:
+        name: "syncthing@{{item.name}}.service"
+        enabled: yes
+        state: restarted
+      loop: "{{users}}"
+    - name: Copy file to local files as update
+      ansible.builtin.fetch:
+        src: "/home/{{ item.name }}/.config/syncthing/config.xml"
+        dest: "./syncthing/{{ item.name }}-config.xml"
+        flat: true
+      loop: "{{ users }}"

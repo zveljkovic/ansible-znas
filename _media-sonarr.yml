@@ -1,0 +1,29 @@
+- name: Add Sonar apt key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: "2009837CBFFD68F45BC180471F4F90DE2A9B4BF8"
+    state: present
+- name: Add Sonar apt repo
+  apt_repository:
+    repo: "deb https://apt.sonarr.tv/ubuntu focal main"
+    state: present
+- name: Pre-configure config_directory
+  ansible.builtin.debconf:
+    name: sonarr
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: string
+  with_items:
+    - { question: 'sonarr/config_directory', value: '/home/media/apps/sonarr' }
+    - { question: 'sonarr/owning_user', value: 'sonarr' }
+    - { question: 'sonarr/owning_group', value: 'media'}
+- name: Apt install Sonarr
+  apt:
+    name: sonarr
+    state: present
+    update_cache: true
+- name: Autostart Sonarr and start service
+  service:
+    name: sonarr
+    enabled: true
+  notify: restart sonarr

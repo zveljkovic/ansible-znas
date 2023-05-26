@@ -1,0 +1,74 @@
+- name: Setup samba
+  hosts: "{{ target|default('znas') }}"
+  become: yes
+  roles:
+    - role: vladgh.samba.server
+  vars:
+    samba_netbios_name: ZNAS
+    samba_server_string: ZNAS
+    samba_server_min_protocol: SMB3
+    samba_server_max_protocol: SMB3
+    samba_workgroup: WORKGROUP
+    samba_log_level: '1'
+    samba_mitigate_cve_2017_7494: false
+    samba_wins_support: false
+#    samba_global_include: global-include.conf
+#    samba_load_homes: true
+#    samba_load_printers: false
+#    samba_create_varwww_symlinks: true
+    samba_users:
+      - name: {{users.0.name}}
+        password: {{users.0.samba_password}}
+      - name: {{users.1.name}}
+        password: {{users.1.samba_password}}
+    samba_shares_root: /home/samba
+    samba_shares:
+      - name: guest
+        comment: "share accessible for guests"
+        path: /home/samba/guest
+        guest_ok: "yes"
+        writable: "yes"
+        write_list: "@users"
+        browseable: "yes"
+      - name: software
+        comment: "software share - writable by registered users"
+        path: /home/samba/software
+        public: "yes"
+        write_list: "@users"
+        group: users
+        setype: public_content_t
+        browseable: "yes"
+      - name: public
+        comment: "public share - writable by registered users"
+        path: /home/samba/public
+        public: "yes"
+        write_list: "@users"
+        group: users
+        setype: public_content_t
+        browseable: "yes"
+      - name: media
+        comment: "media share - writable by registered users"
+        path: /home/media
+        public: "yes"
+        write_list: "@users"
+        group: media
+        setype: public_content_t
+        browseable: "yes"
+      - name: photos
+        path: "/home/%U/photos"
+        comment: "%U photos"
+        valid_users: "%U"
+        write_list: "%U"
+        browseable: "yes"
+      - name: private
+        path: "/home/%U/private"
+        comment: "%U private"
+        valid_users: "%U"
+        write_list: "%U"
+        browseable: "yes"
+      - name: sync
+        path: "/home/%U/sync"
+        comment: "%U sync"
+        valid_users: "%U"
+        write_list: "%U"
+        browseable: "yes"

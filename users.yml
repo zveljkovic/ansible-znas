@@ -1,0 +1,21 @@
+- name: Setup users
+  hosts: "{{ target|default('znas') }}"
+  tasks:
+    - name: Add the user
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        state: present
+        shell: /bin/bash
+        create_home: true
+        groups: users
+        append: yes
+        password: "{{ item.password }}"
+      loop: "{{ users }}"
+    - name: Setup folders
+      ansible.builtin.file:
+        path: "/home/{{ item.0.name }}/{{ item.1 }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ item.0.name }}"
+        group: "{{ item.0.name }}"
+      loop: "{{ users|subelements('folders') }}"

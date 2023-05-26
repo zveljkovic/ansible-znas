@@ -1,0 +1,29 @@
+- name: Install apt-transport-https
+  apt:
+    name: apt-transport-https
+    state: present
+- name: Add Plex apt key
+  apt_key:
+    url: https://downloads.plex.tv/plex-keys/PlexSign.key
+    state: present
+- name: Add Plex apt repo
+  apt_repository:
+    repo: deb https://downloads.plex.tv/repo/deb public main
+    state: present
+  changed_when: false
+- name: Apt install Plex
+  apt:
+    name: plexmediaserver
+    state: present
+    update_cache: true
+  notify: restart plex
+- name: Autostart Plex and start service
+  service:
+    name: plexmediaserver
+    enabled: true
+  notify: restart plex
+#
+#    - name: restart tautulli
+#      service:
+#        name: tautulli
+#        state: restarted

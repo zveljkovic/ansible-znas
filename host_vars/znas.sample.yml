@@ -1,0 +1,17 @@
+users:
+  - name: youruser1
+    # mkpasswd --method=sha-512 yourpassword
+    password: $6$/WsK0nJ4Eod.GeG.$SVMnqwRP3lYn89M1JK6WC9eQOZOUlAd6lzwMPNUZYm/jfvJHQ8AhLrZWPYmEcuspNSPRpbRBXc1XyiBOmuiz2.
+    folders:
+      - photos
+      - private
+      - sync
+    samba_password: plaintextpass
+  - name: youruser2
+    # mkpasswd --method=sha-512 yourpassword
+    password: $6$/WsK0nJ4Eod.GeG.$SVMnqwRP3lYn89M1JK6WC9eQOZOUlAd6lzwMPNUZYm/jfvJHQ8AhLrZWPYmEcuspNSPRpbRBXc1XyiBOmuiz2.
+    folders:
+      - photos
+      - private
+      - sync
+    samba_password: plaintextpass

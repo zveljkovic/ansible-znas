@@ -1,0 +1,53 @@
+- name: Setup media server
+  hosts: "{{ target|default('znas') }}"
+  tasks:
+    - name: Create media user
+      ansible.builtin.user:
+        name: media
+        comment: media user
+        shell: /usr/sbin/nologin
+        system: yes
+        state: present
+    - name: Ensure /home/media/apps directory exists.
+      ansible.builtin.file:
+        path: /home/media/apps
+        state: directory
+        recurse: yes
+        owner: media
+        group: media
+    - name: Install qBittorrent
+      ansible.builtin.import_tasks:
+        file: _media-qBittorrent.yml
+#    - name: Install Prowlarr
+#      ansible.builtin.import_tasks:
+#        file: _media-prowlarr-deprecated.yml
+#    - name: Uninstall Prowlarr
+#      ansible.builtin.import_tasks:
+#        file: _media-prowlarr-uninstall.yml
+    - name: Install Sonarr
+      ansible.builtin.import_tasks:
+        file: _media-sonarr.yml
+    - name: Install Plex
+      ansible.builtin.import_tasks:
+        file: _media-plex.yml
+
+  handlers:
+    - name: reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+    - name: restart qBittorrent
+      service:
+        name: qbittorrent-nox@media
+        state: restarted
+    - name: restart plex
+      service:
+        name: plexmediaserver
+        state: restarted
+    - name: restart sonarr
+      service:
+        name: sonarr
+        state: restarted
+    - name: restart Prowlarr
+      service:
+        name: prowlarr
+        state: restarted
